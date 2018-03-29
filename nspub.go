@@ -39,11 +39,14 @@ type publisher struct {
 
 func (p *publisher) Name() string { return CoreDNSPluginName }
 func (p *publisher) ServeDNS(ctx context.Context, w dns.ResponseWriter, r *dns.Msg) (int, error) {
-	rcode, err := plugin.NextOrFailure(p.Name(), p.next, ctx, w, r)
+	cw := &copyWriter{inner: w}
+	rcode, err := plugin.NextOrFailure(p.Name(), p.next, ctx, cw, r)
 	switch rcode {
 	case dns.RcodeSuccess:
-		if err = p.publish(r); err != nil {
-			log.Printf("error publishing to nsq")
+		if cw.msg != nil {
+			if err = p.publish(cw.msg); err != nil {
+				log.Printf("error publishing to nsq")
+			}
 		}
 	}
 	return rcode, err
