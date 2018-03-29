@@ -24,6 +24,7 @@ package nspub
 import (
 	"context"
 	"log"
+	"net"
 
 	"github.com/coredns/coredns/plugin"
 	"github.com/miekg/dns"
@@ -44,7 +45,7 @@ func (p *publisher) ServeDNS(ctx context.Context, w dns.ResponseWriter, r *dns.M
 	switch rcode {
 	case dns.RcodeSuccess:
 		if cw.msg != nil {
-			if err = p.publish(cw.msg); err != nil {
+			if err = p.publish(w.RemoteAddr().String(), cw.msg); err != nil {
 				log.Printf("error publishing to nsq")
 			}
 		}
@@ -52,7 +53,7 @@ func (p *publisher) ServeDNS(ctx context.Context, w dns.ResponseWriter, r *dns.M
 	return rcode, err
 }
 
-func (p *publisher) publish(msg *dns.Msg) error {
+func (p *publisher) publish(clientAddress string, msg *dns.Msg) error {
 	prod, err := p.cfg.producer()
 	switch err {
 	case nil: // no error
@@ -66,6 +67,10 @@ func (p *publisher) publish(msg *dns.Msg) error {
 	if err != nil {
 		return err
 	}
-
-	return prod.PublishAsync(p.cfg.topic, data, nil)
+	host, _, err := net.SplitHostPort(clientAddress)
+	if err != nil {
+		return err
+	}
+	send := &Message{ClientIP: net.ParseIP(host), Data: data}
+	return prod.PublishAsync(p.cfg.topic, send.Pack(), nil)
 }
