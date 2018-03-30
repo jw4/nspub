@@ -23,8 +23,10 @@ package nspub
 
 import (
 	"context"
+	"encoding/json"
 	"log"
 	"net"
+	"time"
 
 	"github.com/coredns/coredns/plugin"
 	"github.com/miekg/dns"
@@ -63,14 +65,14 @@ func (p *publisher) publish(clientAddress string, msg *dns.Msg) error {
 		return err
 	}
 
-	data, err := msg.Pack()
-	if err != nil {
-		return err
-	}
 	host, _, err := net.SplitHostPort(clientAddress)
 	if err != nil {
 		return err
 	}
-	send := &Message{ClientIP: net.ParseIP(host), Data: data}
-	return prod.PublishAsync(p.cfg.topic, send.Pack(), nil)
+	send := &Message{Time: time.Now(), ClientIP: net.ParseIP(host), Msg: msg}
+	data, err := json.Marshal(send)
+	if err != nil {
+		return err
+	}
+	return prod.PublishAsync(p.cfg.topic, data, nil)
 }
