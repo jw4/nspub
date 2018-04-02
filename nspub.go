@@ -69,8 +69,7 @@ func (p *publisher) publish(clientAddress string, msg *dns.Msg) error {
 	if err != nil {
 		return err
 	}
-	send := &Message{Time: time.Now(), ClientIP: net.ParseIP(host), Msg: msg}
-	data, err := json.Marshal(send)
+	data, err := json.Marshal(&SerializeMessage{Time: time.Now(), ClientIP: net.ParseIP(host), Msg: msg})
 	if err != nil {
 		return err
 	}
