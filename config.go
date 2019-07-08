@@ -4,7 +4,7 @@ import (
 	"errors"
 	"log"
 
-	"github.com/mholt/caddy/caddyfile"
+	"github.com/caddyserver/caddy/caddyfile"
 	nsq "github.com/nsqio/go-nsq"
 )
 
