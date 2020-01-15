@@ -1,9 +1,9 @@
 module jw4.us/nspub
 
 require (
-	github.com/caddyserver/caddy v1.0.3
-	github.com/coredns/coredns v1.6.4
-	github.com/miekg/dns v1.1.17
+	github.com/caddyserver/caddy v1.0.4
+	github.com/coredns/coredns v1.6.6
+	github.com/miekg/dns v1.1.25
 	github.com/nsqio/go-nsq v1.0.7
 )
 
